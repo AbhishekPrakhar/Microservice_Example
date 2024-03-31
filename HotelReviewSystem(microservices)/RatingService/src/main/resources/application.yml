@@ -1,0 +1,20 @@
+server:
+  port: 8083
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://abhishekprakhar25:7G9HIYJWUN3vifk7@cluster0.g3rclmh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      database: microservices
+
+  application:
+    name: RATING_SERVICE
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
