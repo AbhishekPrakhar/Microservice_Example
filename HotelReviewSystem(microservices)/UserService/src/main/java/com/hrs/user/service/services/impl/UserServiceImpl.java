@@ -4,6 +4,7 @@ import com.hrs.user.service.entites.Hotel;
 import com.hrs.user.service.entites.Rating;
 import com.hrs.user.service.entites.User;
 import com.hrs.user.service.exceptions.ResourceNotFoundException;
+import com.hrs.user.service.external.service.HotelService;
 import com.hrs.user.service.repositories.UserRepository;
 import com.hrs.user.service.services.UserService;
 import org.slf4j.Logger;
@@ -28,6 +29,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private HotelService hotelService;
+
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
@@ -50,7 +54,7 @@ public class UserServiceImpl implements UserService {
         User user =  userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with the given id" +userId));
         // fetch rating for above service from RATING-SERVICE
         // http://localhost:8083/ratings/users/<userId>
-        Rating[] ratingForUser = restTemplate.getForObject("http://localhost:8083/ratings/users/" + user.getUserId(), Rating[].class);
+        Rating[] ratingForUser = restTemplate.getForObject("http://RATINGSERVICE/ratings/users/" + user.getUserId(), Rating[].class);
         logger.info("{}", ratingForUser);
 
         List<Rating> ratings = Arrays.stream(ratingForUser).toList();
@@ -59,10 +63,13 @@ public class UserServiceImpl implements UserService {
             // api call to hotel service http://localhost:8082/hotels/0d78fd78-ea16-4ada-9ae6-40327d116b39
             // set the hotel to rating
             // return the rating
-            ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://localhost:8082/hotels/" + rating.getHotelId(), Hotel.class);
-            Hotel hotel = forEntity.getBody();
+//            ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://HOTELSERVICE/hotels/" + rating.getHotelId(), Hotel.class);
+//            Hotel hotel = forEntity.getBody();
 
-            logger.info("response status code: {}", forEntity.getStatusCode());
+            // Feign Client is used here
+            Hotel hotel = hotelService.getHotel(rating.getHotelId());
+
+//            logger.info("response status code: {}", forEntity.getStatusCode());
 
             rating.setHotel(hotel);
             return rating;
